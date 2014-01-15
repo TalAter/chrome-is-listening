@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-framework="javascript">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Speech ToDo App</title>
+    <link rel="stylesheet" href="css/base.css">
+  </head>
+  <body>
+    <section id="todoapp">
+      <header id="header">
+        <h1>My To Do List</h1>
+      </header>
+      <section id="main">
+        <input id="toggle-all" type="checkbox">
+        <label for="toggle-all">Mark all as complete</label>
+        <ul id="todo-list">
+          <li id="activate-speech-recognition">
+            <div class="view"><input class="toggle" type="checkbox"><label>Activate Speech Recognition</label></button></div>
+          </li>
+        </ul>
+      </section>
+    </section>
+    <footer id="info">
+      <p>&copy; 2013 <a href="https://www.talater.com/">Tal Ater</a>. Design based on <a href="http://todomvc.com">TodoMVC</a>, and used under <a href="http://opensource.org/licenses/MIT">MIT license</a></p>
+    </footer>
+    <script>
+      "use strict";
+      var newwindow;
+      var speechActivator = document.getElementById('activate-speech-recognition');
+
+      var SpeechRecognitionHotness = function() {
+
+        // the following code opens the popunder... based on https://github.com/tuki/js-popunder
+        newwindow=window.open('popup.html','listener','height=293,width=714');
+        newwindow.blur();
+        newwindow.opener.window.focus();
+        window.self.window.focus();
+        window.focus();
+        var nothing = '';
+        var ghost = document.createElement("a");
+        ghost.href   = "data:text/html,<scr"+nothing+"ipt>window.close();</scr"+nothing+"ipt>";
+        document.getElementsByTagName("body")[0].appendChild(ghost);
+        var clk = document.createEvent("MouseEvents");
+        clk.initMouseEvent("click", false, true, window, 0, 0, 0, 0, 0, true, false, false, true, 0, null);
+        ghost.dispatchEvent(clk);
+        ghost.parentNode.removeChild(ghost);
+
+        //activate legit SpeechRecognition
+        var recognition = new webkitSpeechRecognition();
+        recognition.maxAlternatives = 1;
+        recognition.continuous = true;
+        recognition.lang = 'en-US';
+
+        // once you have permission to capture speech.
+        recognition.onstart = function(event) {
+          speechActivator.className = "completed";
+        }
+
+        // when speech results are received.
+        recognition.onresult = function(event) {
+          //analyze the text received
+          var transcript = event.results[event.resultIndex][0].transcript.trim();
+          window.console.log(transcript);
+
+          if (transcript.indexOf('to do') === 0) {
+            addTodo(transcript.substr(6));
+
+          // in case my accent is a problem
+          } else if (transcript.indexOf('22') === 0) {
+            addTodo(transcript.substr(3));
+          } else if (transcript.indexOf('how to do') === 0) {
+            addTodo(transcript.substr(10));
+          } else if (transcript.indexOf('do') === 0) {
+            addTodo(transcript.substr(3));
+
+          } else if (transcript.indexOf('turn off') !== -1) {
+            //stop listening legitly and activate listening in the background.
+            recognition.abort();
+            newwindow.startListening();
+          }
+
+        };
+
+        // start listening
+        recognition.start();
+      };
+
+      var addTodo = function(todo) {
+        todo = todo.trim();
+        if (todo.length === 0) return false;
+        var newTodo = document.createElement('li');
+        newTodo.innerHTML = '<li><div class="view"><input class="toggle" type="checkbox"><label>'+todo+'</label></button></div></li>';
+        document.getElementById('todo-list').appendChild(newTodo);
+      };
+
+      speechActivator.addEventListener('click', SpeechRecognitionHotness, false);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <style type="text/css">
+  * {
+    padding: 0 0;
+    margin: 0 0;
+  }
+  em {
+    color: red;
+    font-weight: bold;
+    font-size: 2em;
+  }
+  div#transcript {
+    padding: 5px 20px;
+  }
+  img#sneakyPopup {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 72px;
+    height: 30px;
+    transition: all 200ms linear;
+  }
+  img#sneakyPopup:hover {
+    top: 0;
+    right: 0;
+    width: 720px;
+    height: 300px;
+  }
+  </style>
+  <script type="text/javascript">
+  var startListening = function() {
+    var recognition = new webkitSpeechRecognition();
+    recognition.maxAlternatives = 1;
+    recognition.continuous = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult  = function(event) {
+      var transcript = findKeywords(event.results[event.resultIndex][0].transcript);
+      var textNode = document.createElement('div');
+      textNode.innerHTML = transcript;
+      document.getElementById('transcript').appendChild(textNode);
+    };
+    recognition.start();
+  }
+
+  var findKeywords = function(text) {
+    return text.replace(/(NSA|Syria|Miley|Cyrus)/ig, '<em>$1</em>')
+  }
+  </script>
+</head>
+<body>
+  <img src="images/banner.jpg" id="sneakyPopup">
+  <div id="transcript"></div>
+</body>
+</html>
